@@ -75,12 +75,15 @@ class Sprite {
 }
 
 const Player = new Sprite({
-  position: { x: canvas.width / 1.2, y: 0 },
+  position: { x: 100, y: 0 },
   velocity: { x: 0, y: 0 },
 });
 
 const Enemy = new Sprite({
-  position: { x: canvas.width / 8, y: 0 },
+  position: {
+    x: canvas.width - 150,
+    y: 0,
+  },
   velocity: { x: 0, y: 0 },
 });
 
