@@ -84,20 +84,6 @@ class Sprite {
     }
   }
 
-  checkAttack({ attacker, defender }) {
-    return (
-      attacker.attackbox.position.x + attacker.attackbox.width >=
-        defender.position.x &&
-      attacker.attackbox.position.x <=
-        defender.position.x + defender.characterWidth &&
-      attacker.attackbox.position.y + attacker.attackbox.height >=
-        defender.position.y &&
-      attacker.attackbox.position.y <=
-        defender.position.y + defender.characterHeight &&
-      attacker.isAttacking
-    );
-  }
-
   attack({ attacker, defender }) {
     if (this.counter > 0) {
       this.isAttacking = false;
@@ -105,7 +91,7 @@ class Sprite {
       this.isAttacking = true;
       console.log(
         "hit",
-        this.checkAttack({ attacker: attacker, defender: defender })
+        checkAttack({ attacker: attacker, defender: defender })
       );
     }
     this.counter++;
@@ -139,6 +125,20 @@ const keys = {
 };
 
 let lastkey;
+
+function checkAttack({ attacker, defender }) {
+  return (
+    attacker.attackbox.position.x + attacker.attackbox.width >=
+      defender.position.x &&
+    attacker.attackbox.position.x <=
+      defender.position.x + defender.characterWidth &&
+    attacker.attackbox.position.y + attacker.attackbox.height >=
+      defender.position.y &&
+    attacker.attackbox.position.y <=
+      defender.position.y + defender.characterHeight &&
+    attacker.isAttacking
+  );
+}
 
 function gameLoop() {
   window.requestAnimationFrame(gameLoop);
