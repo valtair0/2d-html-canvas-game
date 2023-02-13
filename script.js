@@ -7,6 +7,7 @@ c.fillStyle = "green";
 c.fillRect(0, 0, canvas.width, canvas.height);
 
 const gravity = 0.2;
+let gameİsOver = false;
 
 class Character {
   constructor({ position, velocity, offset }) {
@@ -89,10 +90,15 @@ class Character {
     if (this.counter > 0) {
       this.isAttacking = false;
     } else {
-      this.isAttacking = true;
-      if (checkAttack({ attacker: attacker, defender: defender })) {
-        defender.health -= 10;
-        document.querySelector(target).style.width = defender.health + "%";
+      if (gameİsOver === false) {
+        this.isAttacking = true;
+        if (checkAttack({ attacker: attacker, defender: defender })) {
+          defender.health -= 10;
+          if (defender.health <= 0) {
+            selectWinner();
+          }
+          document.querySelector(target).style.width = defender.health + "%";
+        }
       }
     }
     this.counter++;
@@ -126,6 +132,33 @@ const keys = {
 };
 
 let lastkey;
+
+function selectWinner() {
+  gameİsOver = true;
+  document.querySelector("#matchResultText").style.display = "flex";
+  if (Player.health === Enemy.health) {
+    document.querySelector("#matchResultText").innerHTML = "Game Over Tie";
+  } else if (Player.health > Enemy.health) {
+    document.querySelector("#matchResultText").innerHTML = "Player Win";
+  } else if (Player.health < Enemy.health) {
+    document.querySelector("#matchResultText").innerHTML = "Enemy Win";
+  }
+}
+
+let timeIs = 11;
+function decreaseTimer() {
+  if (timeIs > 0 && gameİsOver === false) {
+    setTimeout(decreaseTimer, 1000);
+    timeIs--;
+    document.querySelector("#timer").innerHTML = timeIs;
+  }
+
+  if (timeIs === 0) {
+    selectWinner();
+  }
+}
+
+decreaseTimer();
 
 function checkAttack({ attacker, defender }) {
   return (
