@@ -8,7 +8,7 @@ c.fillRect(0, 0, canvas.width, canvas.height);
 
 const gravity = 0.2;
 
-class Sprite {
+class Character {
   constructor({ position, velocity, offset }) {
     this.position = position;
     this.velocity = velocity;
@@ -26,6 +26,7 @@ class Sprite {
     };
     this.isAttacking = false;
     this.counter = 0;
+    this.health = 100;
   }
 
   draw() {
@@ -84,15 +85,15 @@ class Sprite {
     }
   }
 
-  attack({ attacker, defender }) {
+  attack({ attacker, defender, target }) {
     if (this.counter > 0) {
       this.isAttacking = false;
     } else {
       this.isAttacking = true;
-      console.log(
-        "hit",
-        checkAttack({ attacker: attacker, defender: defender })
-      );
+      if (checkAttack({ attacker: attacker, defender: defender })) {
+        defender.health -= 10;
+        document.querySelector(target).style.width = defender.health + "%";
+      }
     }
     this.counter++;
 
@@ -102,13 +103,13 @@ class Sprite {
   }
 }
 
-const Player = new Sprite({
+const Player = new Character({
   position: { x: 100, y: 0 },
   velocity: { x: 0, y: 0 },
   offset: 0,
 });
 
-const Enemy = new Sprite({
+const Enemy = new Character({
   position: {
     x: canvas.width - 150,
     y: 0,
@@ -197,7 +198,11 @@ window.addEventListener("keydown", (e) => {
       Player.jump();
       break;
     case "Space":
-      Player.attack({ attacker: Player, defender: Enemy });
+      Player.attack({
+        attacker: Player,
+        defender: Enemy,
+        target: "#enemyHealth",
+      });
       break;
 
     //Enemy
@@ -213,7 +218,11 @@ window.addEventListener("keydown", (e) => {
       Enemy.jump();
       break;
     case "ArrowDown":
-      Enemy.attack({ attacker: Enemy, defender: Player });
+      Enemy.attack({
+        attacker: Enemy,
+        defender: Player,
+        target: "#playerHealth",
+      });
       break;
 
     default:
