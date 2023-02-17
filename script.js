@@ -1,5 +1,6 @@
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
+const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -9,105 +10,12 @@ c.fillRect(0, 0, canvas.width, canvas.height);
 const gravity = 0.2;
 let gameİsOver = false;
 
-class Character {
-  constructor({ position, velocity, offset }) {
-    this.position = position;
-    this.velocity = velocity;
-    this.characterHeight = 150;
-    this.characterWidth = 50;
-    this.lastKey;
-    this.offset = offset;
-    this.attackbox = {
-      position: {
-        x: this.position.x,
-        y: this.position.y,
-      },
-      width: 100,
-      height: 50,
-    };
-    this.isAttacking = false;
-    this.counter = 0;
-    this.health = 100;
-  }
-
-  draw() {
-    c.fillStyle = "red";
-    c.fillRect(
-      this.position.x,
-      this.position.y,
-      this.characterWidth,
-      this.characterHeight
-    );
-
-    //Attackbox
-    if (this.isAttacking) {
-      c.fillStyle = "blue";
-      c.fillRect(
-        this.attackbox.position.x,
-        this.attackbox.position.y,
-        this.attackbox.width,
-        this.attackbox.height
-      );
-    }
-  }
-
-  update() {
-    this.draw();
-    this.position.y += this.velocity.y;
-    this.position.x += this.velocity.x;
-
-    this.attackbox.position.x = this.position.x + this.offset;
-    this.attackbox.position.y = this.position.y;
-
-    if (this.position.y + this.characterHeight + 50 > canvas.height) {
-      this.velocity.y = 0;
-    } else {
-      this.velocity.y += gravity;
-    }
-  }
-
-  checkCorners() {
-    if (this.position.x < 0) {
-      this.position.x = 0;
-    }
-
-    if (this.position.x > canvas.width - this.characterWidth) {
-      this.position.x = canvas.width - this.characterWidth;
-    }
-
-    if (this.position.y < 0) {
-      this.position.y = 0;
-    }
-  }
-
-  jump() {
-    if (this.velocity.y === 0) {
-      this.velocity.y = -10;
-    }
-  }
-
-  attack({ attacker, defender, target }) {
-    if (this.counter > 0) {
-      this.isAttacking = false;
-    } else {
-      if (gameİsOver === false) {
-        this.isAttacking = true;
-        if (checkAttack({ attacker: attacker, defender: defender })) {
-          defender.health -= 10;
-          if (defender.health <= 0) {
-            selectWinner();
-          }
-          document.querySelector(target).style.width = defender.health + "%";
-        }
-      }
-    }
-    this.counter++;
-
-    setTimeout(() => {
-      this.isAttacking = false;
-    }, 100);
-  }
-}
+const Background = new Sprite({
+  position: { x: 0, y: 0 },
+  image: "./png/background.png",
+  width: canvas.width,
+  height: canvas.height,
+});
 
 const Player = new Character({
   position: { x: 100, y: 0 },
@@ -131,53 +39,13 @@ const keys = {
   ArrowRight: false,
 };
 
-let lastkey;
-
-function selectWinner() {
-  gameİsOver = true;
-  document.querySelector("#matchResultText").style.display = "flex";
-  if (Player.health === Enemy.health) {
-    document.querySelector("#matchResultText").innerHTML = "Game Over Tie";
-  } else if (Player.health > Enemy.health) {
-    document.querySelector("#matchResultText").innerHTML = "Player Win";
-  } else if (Player.health < Enemy.health) {
-    document.querySelector("#matchResultText").innerHTML = "Enemy Win";
-  }
-}
-
-let timeIs = 11;
-function decreaseTimer() {
-  if (timeIs > 0 && gameİsOver === false) {
-    setTimeout(decreaseTimer, 1000);
-    timeIs--;
-    document.querySelector("#timer").innerHTML = timeIs;
-  }
-
-  if (timeIs === 0) {
-    selectWinner();
-  }
-}
-
 decreaseTimer();
-
-function checkAttack({ attacker, defender }) {
-  return (
-    attacker.attackbox.position.x + attacker.attackbox.width >=
-      defender.position.x &&
-    attacker.attackbox.position.x <=
-      defender.position.x + defender.characterWidth &&
-    attacker.attackbox.position.y + attacker.attackbox.height >=
-      defender.position.y &&
-    attacker.attackbox.position.y <=
-      defender.position.y + defender.characterHeight &&
-    attacker.isAttacking
-  );
-}
 
 function gameLoop() {
   window.requestAnimationFrame(gameLoop);
   c.fillStyle = "darkgreen";
   c.fillRect(0, 0, canvas.width, canvas.height);
+  Background.update();
   Player.update();
   Enemy.update();
 
@@ -215,79 +83,3 @@ function gameLoop() {
 }
 
 gameLoop();
-
-window.addEventListener("keydown", (e) => {
-  switch (e.code) {
-    //Player
-    case "KeyD":
-      keys.d = true;
-      Player.lastKey = "d";
-      break;
-    case "KeyA":
-      keys.a = true;
-      Player.lastKey = "a";
-      break;
-    case "KeyW":
-      Player.jump();
-      break;
-    case "Space":
-      Player.attack({
-        attacker: Player,
-        defender: Enemy,
-        target: "#enemyHealth",
-      });
-      break;
-
-    //Enemy
-    case "ArrowRight":
-      keys.ArrowRight = true;
-      Enemy.lastKey = "ArrowRight";
-      break;
-    case "ArrowLeft":
-      keys.ArrowLeft = true;
-      Enemy.lastKey = "ArrowLeft";
-      break;
-    case "ArrowUp":
-      Enemy.jump();
-      break;
-    case "ArrowDown":
-      Enemy.attack({
-        attacker: Enemy,
-        defender: Player,
-        target: "#playerHealth",
-      });
-      break;
-
-    default:
-      break;
-  }
-});
-
-window.addEventListener("keyup", (e) => {
-  switch (e.code) {
-    //Player
-    case "KeyD":
-      keys.d = false;
-      break;
-    case "KeyA":
-      keys.a = false;
-      break;
-    case "Space":
-      Player.counter = 0;
-      break;
-
-    //Enemy
-    case "ArrowRight":
-      keys.ArrowRight = false;
-      break;
-    case "ArrowLeft":
-      keys.ArrowLeft = false;
-      break;
-    case "ArrowDown":
-      Enemy.counter = 0;
-      break;
-
-    default:
-      break;
-  }
-});
